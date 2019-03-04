@@ -69,4 +69,3 @@ Examples:
     # vault-le-upload cert1.mydomain.com cert2.myotherdomain.org
 
 You will likely need to run this as root, since the certificates can only be read by the root user.
-
