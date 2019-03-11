@@ -34,17 +34,18 @@ These are the minimum permissions required, assuming you are using mount point `
     
 ## Usage
 
-This script authenticates to Vault using AppRole. You will need to set up an AppRole role with an appropriate policy for writing to a path of your choosing.
+This script authenticates to Vault using a token or AppRole.
 
 ### Environment Variables
 
 Set these environment variables accordingly:
 
     # export VAULT_ADDR=https://vault.mydomain.com
+    # export VAULT_TOKEN=s.EV4Iqhd3LFS9znYdeiUGURMi
     # export VAULT_ROLE_ID=17fda034-1039-0ead-432c-5b0428658a31
     # export VAULT_SECRET_ID=c1c2a92e-5166-1771-7d4a-09f2300e9596
     
-You may also set these in the `-a`, `-r`, and `-s` flags respectively, but running commands with inline secrets is not recommended.
+You may also set these in the `-a`, `-t`, `-r`, and `-s` flags respectively, but running commands with inline secrets is not recommended.
     
 ### Options
 
@@ -54,8 +55,9 @@ The following options are supported:
 * `-a|--address`: The address of the vault server, including protocol, IP/hostname, and port. Default: "`http://127.0.0.1:8200`".
 * `-m|--mount-point`: The mount point where the certificates will be stored. Default: "`secret`".
 * `-p|--path`: The path where the certificates will be stored. Default: "`ssl-certs`".
-* `-r|--role-id`: The AppRole Role ID for authentication. Setting this option is not recommended. Use `VAULT_ROLE_ID` environment variable instead.
-* `-s|--secret-id`: The Approle Secret ID for authentication. Setting this option is not recommended. Use `VAULT_SECRET_ID` environment variable instead.
+* `-t|--token`: The token for authentication. Setting this option is not recommended. Use the `VAULT_TOKEN` environment variable instead.
+* `-r|--role-id`: The AppRole Role ID for authentication. Setting this option is not recommended. Use the `VAULT_ROLE_ID` environment variable instead.
+* `-s|--secret-id`: The Approle Secret ID for authentication. Setting this option is not recommended. Use the `VAULT_SECRET_ID` environment variable instead.
 
 ### Run
 

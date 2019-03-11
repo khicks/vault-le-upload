@@ -15,16 +15,17 @@ le_directory = '/etc/letsencrypt/live'
 def usage():
     print("usage: {name}\n\t[-a|--address https://vault.mydomain.com]\n\t"
           "[-m|--mount-point secret] [-p|--path ssl-certs]\n\t"
-          "[-r|--role-id ROLE_ID] [-s|--secret-id SECRET_ID]\n\t<cert1.mydomain.com> [cert2.mydomain.com] [...]"
+          "[-t|--token] [-r|--role-id ROLE_ID] [-s|--secret-id SECRET_ID]\n\t"
+          "<cert1.mydomain.com> [cert2.mydomain.com] [...]"
           .format(name=sys.argv[0]))
 
 
 def parse_opts():
-    address = mount_point = path = role_id = secret_id = None
+    address = mount_point = path = token = role_id = secret_id = None
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'ha:m:p:r:s:',
-                                   ['help', 'address=', 'mount-point=', 'path=', 'role-id=', 'secret-id='])
+        opts, args = getopt.getopt(sys.argv[1:], 'ha:m:p:t:r:s:',
+                                   ['help', 'address=', 'mount-point=', 'path=', 'token=', 'role-id=', 'secret-id='])
     except getopt.GetoptError as err:
         print(str(err))
         usage()
@@ -40,6 +41,8 @@ def parse_opts():
             mount_point = arg
         elif opt in ('-p', '--path'):
             path = arg
+        elif opt in ('-t', '--token'):
+            token = arg
         elif opt in ('-r', '--role-id'):
             role_id = arg
         elif opt in ('-s', '--secret-id'):
@@ -53,18 +56,31 @@ def parse_opts():
         mount_point = 'secret'
     if path is None:
         path = 'ssl-certs'
+    if token is None:
+        try:
+            token = os.environ['VAULT_TOKEN']
+        except KeyError:
+            pass
     if role_id is None:
         try:
             role_id = os.environ['VAULT_ROLE_ID']
         except KeyError:
-            print("Error: ROLE_ID must be set via environment variable or -r flag.")
-            sys.exit(3)
+            pass
     if secret_id is None:
         try:
             secret_id = os.environ['VAULT_SECRET_ID']
         except KeyError:
-            print("Error: SECRET must be set via environment variable or -s flag.")
-            sys.exit(4)
+            pass
+
+    if token is None and (role_id is None or secret_id is None):
+        print("Error: One of the following must be set:\n\t"
+              "A Vault token via the VAULT_TOKEN environment variable or -t flag.\n\t"
+              "\n\t"
+              "- OR -\n\t"
+              "\n\t"
+              "A Vault AppRole role ID via the VAULT_ROLE_ID environment variable or -r flag, and\n\t"
+              "a Vault Approle secret ID via the VAULT_SECRET_ID environment variable or -s flag.")
+        sys.exit(3)
 
     if len(args) == 0:
         print("Error: Must specify at least one certificate to upload.")
@@ -79,6 +95,7 @@ def parse_opts():
         'address': address,
         'mount_point': mount_point,
         'path': path,
+        'token': token,
         'role_id': role_id,
         'secret_id': secret_id,
         'certs': args
@@ -89,11 +106,18 @@ def create_vault_client(options):
     vault = hvac.Client(url=options['address'])
 
     try:
-        vault.auth_approle(role_id=options['role_id'], secret_id=options['secret_id'])
+        if options['token'] is not None:
+            vault.token = options['token']
+            assert vault.is_authenticated()
+        else:
+            vault.auth_approle(role_id=options['role_id'], secret_id=options['secret_id'])
     except requests.exceptions.ConnectionError as err:
         print("Error: Connection to Vault server at {addr} could not be established.\n{err}"
               .format(addr=options['address'], err=err))
         sys.exit(7)
+    except AssertionError:
+        print("Error: Cannot authenticate with Vault token.")
+        sys.exit(8)
     except hvac.v1.exceptions.InvalidRequest as err:
         print("Error: Authentication to Vault server at {addr} failed.\n{err}"
               .format(addr=options['address'], err=err))
