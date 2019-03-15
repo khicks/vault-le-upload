@@ -92,7 +92,7 @@ def main():
     certs = vaultle.vault_get_certs(vault, options, 100)
 
     for cert_name, attrs in certs.items():
-        vaultle.le_request_certificate(attrs['sans'])
+        vaultle.le_request_certificate(attrs['sans'].split(','))
         vaultle.vault_upload_cert(vault, options, cert_name)
         print("Renewed certificate for {name}".format(name=cert_name))
 
