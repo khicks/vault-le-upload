@@ -95,8 +95,9 @@ def parse_opts():
 def main():
     options = parse_opts()
 
+    print("===> Creating certificate for {name}..".format(name=options['cert_sans'][0]))
     vaultle.le_request_certificate(options['cert_sans'])
-    print("Created certificate for {name}".format(name=options['cert_sans'][0]))
+    print("===> Created certificate for {name}".format(name=options['cert_sans'][0]))
 
 
 if __name__ == "__main__":

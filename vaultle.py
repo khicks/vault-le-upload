@@ -111,6 +111,8 @@ def vault_get_certs(vault, options, expires_less_than_days=None):
                 path='/'.join([options['path'], secret])
             )['data']['data']
 
+        cert['sans'] = cert['sans'].split(',')
+
         if 'updated' in cert and 'expires' in cert:
             if expires_less_than_days is None:
                 certificates[cert_name] = cert
@@ -119,6 +121,8 @@ def vault_get_certs(vault, options, expires_less_than_days=None):
                 expires_delta = expires - now
                 if expires_delta.days < expires_less_than_days:
                     certificates[cert_name] = cert
+
+
 
     return certificates
 

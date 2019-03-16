@@ -98,7 +98,7 @@ def main():
 
     for cert_name in options['certs']:
         vaultle.vault_upload_cert(vault, options, cert_name)
-        print("Uploaded certificate for {name}.".format(name=cert_name))
+        print("===> Uploaded certificate for {name}.".format(name=cert_name))
 
 
 if __name__ == "__main__":

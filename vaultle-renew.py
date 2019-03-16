@@ -89,12 +89,13 @@ def parse_opts():
 def main():
     options = parse_opts()
     vault = vaultle.vault_create_client(options)
-    certs = vaultle.vault_get_certs(vault, options, 100)
+    certs = vaultle.vault_get_certs(vault, options, 35)
 
     for cert_name, attrs in certs.items():
-        vaultle.le_request_certificate(attrs['sans'].split(','))
+        print("===> Renewing certificate for {name}...".format(name=cert_name))
+        vaultle.le_request_certificate(attrs['sans'])
         vaultle.vault_upload_cert(vault, options, cert_name)
-        print("Renewed certificate for {name}".format(name=cert_name))
+        print("===> Renewed certificate for {name}".format(name=cert_name))
 
 
 if __name__ == "__main__":
