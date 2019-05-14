@@ -33,7 +33,9 @@ def get_cert_sans(cert_name):
     cert_pem = read_file(cert_name, 'cert.pem')
     cert_x509 = x509.load_pem_x509_certificate(cert_pem.encode('ascii'), default_backend())
     ext = cert_x509.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
-    return ','.join(ext.value.get_values_for_type(x509.DNSName))
+    sans = ext.value.get_values_for_type(x509.DNSName)
+    sans.insert(0, sans.pop(sans.index(cert_name)))
+    return ','.join(sans)
 
 
 # ======================================================
